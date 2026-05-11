@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Historia Clínica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC0',
+                        light: '#F2F5F7',
+                        dark: '#1D2129'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-dark min-h-screen flex items-center justify-center">
+
+<!-- PANTALLA DE ACCESO -->
+<div id="pantallaAcceso" class="w-full max-w-md px-4">
+    <div class="bg-white rounded-xl shadow-xl p-8 text-center">
+        <i class="fa fa-lock text-primary text-5xl mb-4"></i>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Acceso al Sistema</h2>
+        <p class="text-gray-600 mb-6">Ingrese la clave para acceder al registro</p>
+        
+        <input type="password" id="claveAcceso" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition mb-4" placeholder="Ingrese la clave...">
+        
+        <button id="btnIngresar" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-lg transition-all transform hover:scale-[0.98] active:scale-[0.95]">
+            <i class="fa fa-sign-in mr-2"></i> Ingresar
+        </button>
+        <p id="mensajeError" class="text-red-500 text-sm mt-3 hidden">❌ Clave incorrecta CHICHICO, intente nuevamente o consultale a Erick</p>
+    </div>
+</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div id="contenidoPrincipal" class="container mx-auto px-4 py-8 max-w-6xl hidden w-full">
+    <header class="mb-10 text-center relative">
+        <button id="btnCerrar" class="absolute top-0 right-0 text-gray-600 hover:text-red-600 transition">
+            <i class="fa fa-sign-out mr-1"></i> Cerrar sesión
+        </button>
+        <h1 class="text-[clamp(1.6rem,2.8vw,2.6rem)] font-bold text-primary mb-2">
+            <i class="fa fa-heartbeat mr-2"></i>REGISTRO DE HISTORIA CLINICAS DEL PUESTO DE SALUD EL LIMON
+        </h1>
+        <p class="text-gray-600">📡 Datos conectados a la nube</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- FORMULARIO -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl shadow-lg p-6 sticky top-4">
+                <h2 id="tituloForm" class="text-xl font-semibold mb-5 text-center text-secondary">
+                    <i class="fa fa-user-plus mr-2"></i>Ingresar Datos
+                </h2>
+
+                <form id="formRegistro" class="space-y-4">
+                    <input type="hidden" id="indiceEdicion" value="-1">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombres</label>
+                        <input type="text" id="nombres" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Ej: Juan Carlos" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Apellidos</label>
+                        <input type="text" id="apellidos" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Ej: Pérez Gómez" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">DNI</label>
+                        <input type="text" id="dni" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Ej: 12345678" maxlength="8" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                        <input type="tel" id="telefono" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Ej: 987654321" maxlength="9" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">N° Historia Clínica</label>
+                        <input type="text" id="historiaClinica" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Ej: HC-0001" required>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button type="submit" id="btnGuardar" class="flex-1 bg-primary hover:bg-primary/90 text-white font-medium py-2.5 rounded-lg transition">
+                            <i class="fa fa-save mr-1"></i> Guardar en Nube
+                        </button>
+                        <button type="button" id="btnCancelar" class="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-medium py-2.5 rounded-lg transition hidden">
+                            <i class="fa fa-times mr-1"></i> Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- BUSQUEDA Y LISTADO -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold mb-4 text-center text-secondary">
+                    <i class="fa fa-search mr-2"></i>Buscar Paciente
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Por Nombres</label>
+                        <input type="text" id="buscarNombres" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Buscar...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Por Apellidos</label>
+                        <input type="text" id="buscarApellidos" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Buscar...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Por DNI</label>
+                        <input type="text" id="buscarDni" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Buscar..." maxlength="8">
+                    </div>
+                </div>
+                <button id="btnBuscar" class="w-full bg-secondary hover:bg-secondary/90 text-white font-medium py-2 rounded-lg transition">
+                    <i class="fa fa-search mr-1"></i> Realizar Búsqueda
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold mb-4 text-center text-secondary">
+                    <i class="fa fa-list-alt mr-2"></i>Listado de Pacientes
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[700px]">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-700">
+                                <th class="px-3 py-3 text-left">Nombres</th>
+                                <th class="px-3 py-3 text-left">Apellidos</th>
+                                <th class="px-3 py-3 text-left">DNI</th>
+                                <th class="px-3 py-3 text-left">Teléfono</th>
+                                <th class="px-3 py-3 text-left">N° HC</th>
+                                <th class="px-3 py-3 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaRegistros">
+                            <tr><td colspan="6" class="text-center py-4 text-gray-500">Cargando datos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ⚠️ IMPORTANTE: URL DE GOOGLE APPS SCRIPT
+    const URL_BASE_DATOS = "https://script.google.com/macros/s/AKfycbyTjBDKKuMTdZASxKU16WUQsrwL3-ztC0JF6pgbilJCbu1g4TQTfkox6Nd2ddFTIjnd/exec"; 
+    const CLAVE_CORRECTA = "limon2026";
+
+    // Elementos
+    const pantallaAcceso = document.getElementById('pantallaAcceso');
+    const contenidoPrincipal = document.getElementById('contenidoPrincipal');
+    const claveAcceso = document.getElementById('claveAcceso');
+    const btnIngresar = document.getElementById('btnIngresar');
+    const mensajeError = document.getElementById('mensajeError');
+    const tablaRegistros = document.getElementById('tablaRegistros');
+    const formRegistro = document.getElementById('formRegistro');
+    const btnCerrar = document.getElementById('btnCerrar');
+    const btnCancelar = document.getElementById('btnCancelar');
+    const tituloForm = document.getElementById('tituloForm');
+    const btnGuardar = document.getElementById('btnGuardar');
+
+    // LOGIN
+    btnIngresar.addEventListener('click', function() {
+        if (claveAcceso.value === CLAVE_CORRECTA) {
+            pantallaAcceso.classList.add('hidden');
+            contenidoPrincipal.classList.remove('hidden');
+            cargarDatosDesdeNube();
+        } else {
+            mensajeError.classList.remove('hidden');
+            claveAcceso.value = "";
+            setTimeout(() => mensajeError.classList.add('hidden'), 3500);
+        }
+    });
+
+    // CERRAR SESIÓN
+    btnCerrar.addEventListener('click', function() {
+        contenidoPrincipal.classList.add('hidden');
+        pantallaAcceso.classList.remove('hidden');
+        claveAcceso.value = "";
+    });
+
+    // CARGAR DATOS
+    async function cargarDatosDesdeNube() {
+        try {
+            const respuesta = await fetch(URL_BASE_DATOS);
+            const datos = await respuesta.json();
+            mostrarRegistros(datos);
+        } catch (error) {
+            tablaRegistros.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">❌ Error al conectar con la base de datos</td></tr>`;
+        }
+    }
+
+    // GUARDAR DATOS
+    formRegistro.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const paciente = {
+            nombres: document.getElementById('nombres').value,
+            apellidos: document.getElementById('apellidos').value,
+            dni: document.getElementById('dni').value,
+            telefono: document.getElementById('telefono').value,
+            historiaClinica: document.getElementById('historiaClinica').value
+        };
+
+        try {
+            await fetch(URL_BASE_DATOS, {
+                method: 'POST',
+                body: JSON.stringify(paciente)
+            });
+            
+            alert('✅ Guardado en la nube correctamente');
+            formRegistro.reset();
+            cargarDatosDesdeNube();
+        } catch (error) {
+            alert('❌ Error al guardar');
+        }
+    });
+
+    // MOSTRAR EN TABLA
+    function mostrarRegistros(lista) {
+        tablaRegistros.innerHTML = "";
+        if(lista.length === 0) {
+            tablaRegistros.innerHTML = `<tr><td colspan="6" class="text-center py-4">No hay registros</td></tr>`;
+            return;
+        }
+        lista.forEach(p => {
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+                <td class="px-3 py-3">${p.nombres}</td>
+                <td class="px-3 py-3">${p.apellidos}</td>
+                <td class="px-3 py-3">${p.dni}</td>
+                <td class="px-3 py-3">${p.telefono}</td>
+                <td class="px-3 py-3">${p.historiaClinica}</td>
+                <td class="px-3 py-3 text-center">
+                    <span class="text-green-600"><i class="fa fa-check-circle"></i> Guardado</span>
+                </td>
+            `;
+            tablaRegistros.appendChild(fila);
+        });
+    }
+
+    // BUSCAR
+    document.getElementById('btnBuscar').addEventListener('click', async function() {
+        const bN = document.getElementById('buscarNombres').value.toLowerCase();
+        const bA = document.getElementById('buscarApellidos').value.toLowerCase();
+        const bD = document.getElementById('buscarDni').value.toLowerCase();
+        
+        const resp = await fetch(URL_BASE_DATOS);
+        const todos = await resp.json();
+        
+        const filtrados = todos.filter(p => 
+            p.nombres.toLowerCase().includes(bN) &&
+            p.apellidos.toLowerCase().includes(bA) &&
+            p.dni.includes(bD)
+        );
+        mostrarRegistros(filtrados);
+    });
+
+    // CANCELAR EDICION
+    btnCancelar.addEventListener('click', function() {
+        formRegistro.reset();
+        document.getElementById('indiceEdicion').value = "-1";
+        tituloForm.innerHTML = `<i class="fa fa-user-plus mr-2"></i>Ingresar Datos`;
+        btnGuardar.innerHTML = `<i class="fa fa-save mr-1"></i> Guardar en Nube`;
+        btnCancelar.classList.add('hidden');
+    });
+
+</script>
+</body>
+</html>
