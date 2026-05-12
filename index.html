@@ -164,13 +164,12 @@
 </div>
 
 <script>
-    // ✅ TU ENLACE NUEVO YA PUESTO Y CONFIGURADO
-    const URL_BASE_DATOS = "https://script.google.com/macros/s/AKfycbyAmnY7oOPKgas1NBCj65sj9MiECoSttTgqhVzCiEucJfY3IGemF6jFLHS3KvWPoxAN/exec"; 
+    // ✅ TU ENLACE EXACTO YA PUESTO Y CONFIGURADO
+    const URL_BASE_DATOS = "https://script.google.com/macros/s/AKfycbxtNRRArcRgTueVtzITorwDCCk_ZRuDg4t-5BiHULeEeypOHvfL8vaawVvIcMNF2ieN/exec"; 
     const CLAVE_CORRECTA = "limon2026";
 
-    let datosGlobales = []; // Guardamos todos los registros
+    let datosGlobales = [];
 
-    // Elementos
     const pantallaAcceso = document.getElementById('pantallaAcceso');
     const contenidoPrincipal = document.getElementById('contenidoPrincipal');
     const claveAcceso = document.getElementById('claveAcceso');
@@ -184,7 +183,6 @@
     const btnGuardar = document.getElementById('btnGuardar');
     const indiceEdicion = document.getElementById('indiceEdicion');
 
-    // LOGIN
     btnIngresar.addEventListener('click', function() {
         if (claveAcceso.value === CLAVE_CORRECTA) {
             pantallaAcceso.classList.add('hidden');
@@ -197,28 +195,25 @@
         }
     });
 
-    // CERRAR SESIÓN
     btnCerrar.addEventListener('click', function() {
         contenidoPrincipal.classList.add('hidden');
         pantallaAcceso.classList.remove('hidden');
         claveAcceso.value = "";
     });
 
-    // CARGAR DATOS
     async function cargarDatosDesdeNube() {
         try {
-            const respuesta = await fetch(URL_BASE_DATOS + "?nocache=" + new Date().getTime());
+            const respuesta = await fetch(URL_BASE_DATOS + "?t=" + Date.now());
             datosGlobales = await respuesta.json();
+            if (datosGlobales.error) throw new Error(datosGlobales.error);
             mostrarRegistros(datosGlobales);
         } catch (error) {
-            tablaRegistros.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">❌ Error al conectar: ${error}</td></tr>`;
+            tablaRegistros.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">❌ Error: ${error}</td></tr>`;
         }
     }
 
-    // GUARDAR / ACTUALIZAR
     formRegistro.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
         const paciente = {
             nombres: document.getElementById('nombres').value,
             apellidos: document.getElementById('apellidos').value,
@@ -229,13 +224,14 @@
 
         try {
             if (indiceEdicion.value !== "-1") {
-                // ✅ EDITAR
                 await fetch(URL_BASE_DATOS + "?editar=" + indiceEdicion.value + "&datos=" + encodeURIComponent(JSON.stringify(paciente)), { method: 'POST' });
-                alert("✅ Registro actualizado");
+                alert("✅ Registro actualizado correctamente");
             } else {
-                // ✅ GUARDAR NUEVO
-                await fetch(URL_BASE_DATOS, { method: 'POST', body: JSON.stringify(paciente) });
-                alert("✅ Guardado en la nube");
+                await fetch(URL_BASE_DATOS, {
+                    method: 'POST',
+                    body: JSON.stringify(paciente)
+                });
+                alert("✅ Guardado en la nube correctamente");
             }
 
             formRegistro.reset();
@@ -247,13 +243,13 @@
         }
     });
 
-    // ✅ MOSTRAR CON BOTONES EDITAR / ELIMINAR
     function mostrarRegistros(lista) {
         tablaRegistros.innerHTML = "";
-        if(lista.length === 0) {
-            tablaRegistros.innerHTML = `<tr><td colspan="6" class="text-center py-4">No hay registros</td></tr>`;
+        if (lista.length === 0) {
+            tablaRegistros.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">No hay registros guardados</td></tr>`;
             return;
         }
+
         lista.forEach((p, i) => {
             const fila = document.createElement('tr');
             fila.className = "hover:bg-gray-50";
@@ -276,7 +272,6 @@
         });
     }
 
-    // ✅ FUNCIÓN EDITAR
     window.editar = function(indice) {
         const p = datosGlobales[indice];
         document.getElementById('nombres').value = p.nombres;
@@ -289,17 +284,16 @@
         tituloForm.innerHTML = `<i class="fa fa-pencil-square-o mr-2"></i>EDITAR REGISTRO`;
         btnGuardar.innerHTML = `<i class="fa fa-refresh mr-1"></i> Actualizar`;
         btnGuardar.classList.remove('bg-primary');
-        btnGuardar.classList.add('bg-yellow-500','hover:bg-yellow-600');
+        btnGuardar.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
         btnCancelar.classList.remove('hidden');
 
-        window.scrollTo({top:0, behavior:'smooth'});
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // ✅ FUNCIÓN ELIMINAR
     window.eliminar = async function(indice) {
         if (!confirm("¿Seguro que quieres ELIMINAR este registro?\n¡No se puede deshacer!")) return;
 
-        try {             
+        try {
             await fetch(URL_BASE_DATOS + "?eliminar=" + indice, { method: 'POST' });
             alert("✅ Registro eliminado correctamente");
             cargarDatosDesdeNube();
@@ -308,14 +302,14 @@
         }
     };
 
-    // ✅ BOTÓN CANCELAR (volver a modo agregar)
-    btnCancelar.addEventListener('click', function() {
+    btnCancelar.addEventListener('click', function()
+        btnCancelar.addEventListener('click', function() {
         formRegistro.reset();
         indiceEdicion.value = "-1";
         tituloForm.innerHTML = `<i class="fa fa-user-plus mr-2"></i>Ingresar Datos`;
         btnGuardar.innerHTML = `<i class="fa fa-save mr-1"></i> Guardar en Nube`;
-        btnGuardar.classList.remove('bg-yellow-500','hover:bg-yellow-600');
-        btnGuardar.classList.add('bg-primary','hover:bg-primary/90');
+        btnGuardar.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+        btnGuardar.classList.add('bg-primary', 'hover:bg-primary/90');
         btnCancelar.classList.add('hidden');
     });
 
@@ -325,7 +319,7 @@
         const txtApellido = document.getElementById('buscarApellidos').value.toLowerCase().trim();
         const txtDni = document.getElementById('buscarDni').value.toLowerCase().trim();
 
-        const respuesta = await fetch(URL_BASE_DATOS + "?nocache=" + new Date().getTime());
+        const respuesta = await fetch(URL_BASE_DATOS + "?t=" + Date.now());
         const todosDatos = await respuesta.json();
 
         const resultado = todosDatos.filter(registro => {
