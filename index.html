@@ -52,7 +52,7 @@
         <button id="btnIngresar" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-lg transition-all transform hover:scale-[0.98] active:scale-[0.95]">
             <i class="fa fa-sign-in mr-2"></i> Ingresar
         </button>
-        <p id="mensajeError" class="text-red-500 text-sm mt-3 hidden">❌ Clave incorrecta CHICHICO, intente nuevamente o consultale a Erick</p>
+        <p id="mensajeError" class="text-red-500 text-sm mt-3 hidden">❌ Clave incorrecta, intente nuevamente</p>
     </div>
 </div>
 
@@ -164,8 +164,9 @@
 </div>
 
 <script>
-    // ✅ TU ENLACE EXACTO YA PUESTO Y CONFIGURADO
+    // ✅ TU ENLace CORRECTO
     const URL_BASE_DATOS = "https://script.google.com/macros/s/AKfycbxtNRRArcRgTueVtzITorwDCCk_ZRuDg4t-5BiHULeEeypOHvfL8vaawVvIcMNF2ieN/exec"; 
+    // ✅ CLAVE CORRECTA PARA ENTRAR: limon2026
     const CLAVE_CORRECTA = "limon2026";
 
     let datosGlobales = [];
@@ -183,15 +184,16 @@
     const btnGuardar = document.getElementById('btnGuardar');
     const indiceEdicion = document.getElementById('indiceEdicion');
 
+    // ✅ ACCESO CORREGIDO
     btnIngresar.addEventListener('click', function() {
-        if (claveAcceso.value === CLAVE_CORRECTA) {
+        if (claveAcceso.value.trim() === CLAVE_CORRECTA) {
             pantallaAcceso.classList.add('hidden');
             contenidoPrincipal.classList.remove('hidden');
             cargarDatosDesdeNube();
         } else {
             mensajeError.classList.remove('hidden');
             claveAcceso.value = "";
-            setTimeout(() => mensajeError.classList.add('hidden'), 3500);
+            setTimeout(() => mensajeError.classList.add('hidden'), 3000);
         }
     });
 
@@ -302,8 +304,8 @@
         }
     };
 
-    btnCancelar.addEventListener('click', function()
-        btnCancelar.addEventListener('click', function() {
+    // ✅ BOTÓN CANCELAR (CORREGIDO)
+    btnCancelar.addEventListener('click', function() {
         formRegistro.reset();
         indiceEdicion.value = "-1";
         tituloForm.innerHTML = `<i class="fa fa-user-plus mr-2"></i>Ingresar Datos`;
