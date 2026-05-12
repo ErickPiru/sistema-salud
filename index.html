@@ -164,9 +164,11 @@
 </div>
 
 <script>
-    // ⚠️ IMPORTANTE: URL DE GOOGLE APPS SCRIPT
+    // ✅ TU URL EXACTA YA PUESTA
     const URL_BASE_DATOS = "https://script.google.com/macros/s/AKfycbyTjBDKKuMTdZASxKU16WUQsrwL3-ztC0JF6pgbilJCbu1g4TQTfkox6Nd2ddFTIjnd/exec"; 
     const CLAVE_CORRECTA = "limon2026";
+
+    let datosGlobales = []; // Guardamos todos los registros
 
     // Elementos
     const pantallaAcceso = document.getElementById('pantallaAcceso');
@@ -180,6 +182,7 @@
     const btnCancelar = document.getElementById('btnCancelar');
     const tituloForm = document.getElementById('tituloForm');
     const btnGuardar = document.getElementById('btnGuardar');
+    const indiceEdicion = document.getElementById('indiceEdicion');
 
     // LOGIN
     btnIngresar.addEventListener('click', function() {
@@ -205,14 +208,14 @@
     async function cargarDatosDesdeNube() {
         try {
             const respuesta = await fetch(URL_BASE_DATOS);
-            const datos = await respuesta.json();
-            mostrarRegistros(datos);
+            datosGlobales = await respuesta.json();
+            mostrarRegistros(datosGlobales);
         } catch (error) {
             tablaRegistros.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">❌ Error al conectar con la base de datos</td></tr>`;
         }
     }
 
-    // GUARDAR DATOS
+    // GUARDAR / ACTUALIZAR
     formRegistro.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -225,28 +228,35 @@
         };
 
         try {
-            await fetch(URL_BASE_DATOS, {
-                method: 'POST',
-                body: JSON.stringify(paciente)
-            });
-            
-            alert('✅ Guardado en la nube correctamente');
+            if (indiceEdicion.value !== "-1") {
+                // ✅ EDITAR: enviamos índice y datos nuevos
+                await fetch(URL_BASE_DATOS + "?editar=" + indiceEdicion.value + "&datos=" + encodeURIComponent(JSON.stringify(paciente)), { method: 'POST' });
+                alert("✅ Registro actualizado");
+            } else {
+                // ✅ GUARDAR NUEVO
+                await fetch(URL_BASE_DATOS, { method: 'POST', body: JSON.stringify(paciente) });
+                alert("✅ Guardado en la nube");
+            }
+
             formRegistro.reset();
+            btnCancelar.click();
             cargarDatosDesdeNube();
+
         } catch (error) {
-            alert('❌ Error al guardar');
+            alert("❌ Error: " + error);
         }
     });
 
-    // MOSTRAR EN TABLA
+    // ✅ MOSTRAR CON BOTONES EDITAR / ELIMINAR
     function mostrarRegistros(lista) {
         tablaRegistros.innerHTML = "";
         if(lista.length === 0) {
             tablaRegistros.innerHTML = `<tr><td colspan="6" class="text-center py-4">No hay registros</td></tr>`;
             return;
         }
-        lista.forEach(p => {
+        lista.forEach((p, i) => {
             const fila = document.createElement('tr');
+            fila.className = "hover:bg-gray-50";
             fila.innerHTML = `
                 <td class="px-3 py-3">${p.nombres}</td>
                 <td class="px-3 py-3">${p.apellidos}</td>
@@ -254,39 +264,82 @@
                 <td class="px-3 py-3">${p.telefono}</td>
                 <td class="px-3 py-3">${p.historiaClinica}</td>
                 <td class="px-3 py-3 text-center">
-                    <span class="text-green-600"><i class="fa fa-check-circle"></i> Guardado</span>
+                    <button onclick="editar(${i})" class="text-blue-600 hover:text-blue-800 mx-1" title="Editar">
+                        <i class="fa fa-pencil-square-o text-lg"></i>
+                    </button>
+                    <button onclick="eliminar(${i})" class="text-red-600 hover:text-red-800 mx-1" title="Eliminar">
+                        <i class="fa fa-trash-o text-lg"></i>
+                    </button>
                 </td>
             `;
             tablaRegistros.appendChild(fila);
         });
     }
 
-    // BUSCAR
-    document.getElementById('btnBuscar').addEventListener('click', async function() {
-        const bN = document.getElementById('buscarNombres').value.toLowerCase();
-        const bA = document.getElementById('buscarApellidos').value.toLowerCase();
-        const bD = document.getElementById('buscarDni').value.toLowerCase();
-        
-        const resp = await fetch(URL_BASE_DATOS);
-        const todos = await resp.json();
-        
-        const filtrados = todos.filter(p => 
-            p.nombres.toLowerCase().includes(bN) &&
-            p.apellidos.toLowerCase().includes(bA) &&
-            p.dni.includes(bD)
-        );
-        mostrarRegistros(filtrados);
-    });
+    // ✅ FUNCIÓN EDITAR
+    window.editar = function(indice) {
+        const p = datosGlobales[indice];
+        document.getElementById('nombres').value = p.nombres;
+        document.getElementById('apellidos').value = p.apellidos;
+        document.getElementById('dni').value = p.dni;
+        document.getElementById('telefono').value = p.telefono;
+        document.getElementById('historiaClinica').value = p.historiaClinica;
+        document.getElementById('indiceEdicion').value = indice;
 
-    // CANCELAR EDICION
+        tituloForm.innerHTML = `<i class="fa fa-pencil-square-o mr-2"></i>EDITAR REGISTRO`;
+        btnGuardar.innerHTML = `<i class="fa fa-refresh mr-1"></i> Actualizar`;
+        btnGuardar.classList.remove('bg-primary');
+        btnGuardar.classList.add('bg-yellow-500','hover:bg-yellow-600');
+        btnCancelar.classList.remove('hidden');
+
+        window.scrollTo({top:0, behavior:'smooth'});
+    };
+
+    // ✅ FUNCIÓN ELIMINAR (COMPLETA Y TERMINADA)
+    window.eliminar = async function(indice) {
+        if (!confirm("¿Seguro que quieres ELIMINAR este registro?\n¡No se puede deshacer!")) return;
+
+        try {
+            await fetch(URL_BASE_DATOS + "?eliminar=" + indice, { method: 'POST' });
+            alert("✅ Registro eliminado correctamente");
+                        cargarDatosDesdeNube(); // Volver a cargar la lista actualizada
+        } catch (error) {
+            alert("❌ Error al eliminar: " + error);
+        }
+    };
+
+    // ✅ BOTÓN CANCELAR (volver a modo agregar)
     btnCancelar.addEventListener('click', function() {
         formRegistro.reset();
-        document.getElementById('indiceEdicion').value = "-1";
+        indiceEdicion.value = "-1";
         tituloForm.innerHTML = `<i class="fa fa-user-plus mr-2"></i>Ingresar Datos`;
         btnGuardar.innerHTML = `<i class="fa fa-save mr-1"></i> Guardar en Nube`;
+        btnGuardar.classList.remove('bg-yellow-500','hover:bg-yellow-600');
+        btnGuardar.classList.add('bg-primary','hover:bg-primary/90');
         btnCancelar.classList.add('hidden');
     });
 
+    // ✅ BUSCAR REGISTROS
+    document.getElementById('btnBuscar').addEventListener('click', async function() {
+        const txtNombre = document.getElementById('buscarNombres').value.toLowerCase().trim();
+        const txtApellido = document.getElementById('buscarApellidos').value.toLowerCase().trim();
+        const txtDni = document.getElementById('buscarDni').value.toLowerCase().trim();
+
+        const respuesta = await fetch(URL_BASE_DATOS);
+        const todosDatos = await respuesta.json();
+
+        const resultado = todosDatos.filter(registro => {
+            return (
+                registro.nombres.toLowerCase().includes(txtNombre) &&
+                registro.apellidos.toLowerCase().includes(txtApellido) &&
+                registro.dni.toLowerCase().includes(txtDni)
+            );
+        });
+
+        mostrarRegistros(resultado);
+    });
+
 </script>
+
 </body>
 </html>
