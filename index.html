@@ -164,8 +164,8 @@
 </div>
 
 <script>
-    // ✅ TU URL EXACTA YA PUESTA
-    const URL_BASE_DATOS = "https://script.google.com/macros/s/AKfycbz8priirRzpQ4zWeDdwxG6qLiwy4_CnJwHEm13iiBXn1Edzy_AHOZGg6ZTQcptAy-8/exec"; 
+    // ✅ TU ENLACE NUEVO YA PUESTO Y CONFIGURADO
+    const URL_BASE_DATOS = "https://script.google.com/macros/s/AKfycbyAmnY7oOPKgas1NBCj65sj9MiECoSttTgqhVzCiEucJfY3IGemF6jFLHS3KvWPoxAN/exec"; 
     const CLAVE_CORRECTA = "limon2026";
 
     let datosGlobales = []; // Guardamos todos los registros
@@ -207,11 +207,11 @@
     // CARGAR DATOS
     async function cargarDatosDesdeNube() {
         try {
-            const respuesta = await fetch(URL_BASE_DATOS);
+            const respuesta = await fetch(URL_BASE_DATOS + "?nocache=" + new Date().getTime());
             datosGlobales = await respuesta.json();
             mostrarRegistros(datosGlobales);
         } catch (error) {
-            tablaRegistros.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">❌ Error al conectar con la base de datos</td></tr>`;
+            tablaRegistros.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">❌ Error al conectar: ${error}</td></tr>`;
         }
     }
 
@@ -229,7 +229,7 @@
 
         try {
             if (indiceEdicion.value !== "-1") {
-                // ✅ EDITAR: enviamos índice y datos nuevos
+                // ✅ EDITAR
                 await fetch(URL_BASE_DATOS + "?editar=" + indiceEdicion.value + "&datos=" + encodeURIComponent(JSON.stringify(paciente)), { method: 'POST' });
                 alert("✅ Registro actualizado");
             } else {
@@ -295,14 +295,14 @@
         window.scrollTo({top:0, behavior:'smooth'});
     };
 
-    // ✅ FUNCIÓN ELIMINAR (COMPLETA Y TERMINADA)
+    // ✅ FUNCIÓN ELIMINAR
     window.eliminar = async function(indice) {
         if (!confirm("¿Seguro que quieres ELIMINAR este registro?\n¡No se puede deshacer!")) return;
 
-        try {
+        try {             
             await fetch(URL_BASE_DATOS + "?eliminar=" + indice, { method: 'POST' });
             alert("✅ Registro eliminado correctamente");
-                        cargarDatosDesdeNube(); // Volver a cargar la lista actualizada
+            cargarDatosDesdeNube();
         } catch (error) {
             alert("❌ Error al eliminar: " + error);
         }
@@ -325,7 +325,7 @@
         const txtApellido = document.getElementById('buscarApellidos').value.toLowerCase().trim();
         const txtDni = document.getElementById('buscarDni').value.toLowerCase().trim();
 
-        const respuesta = await fetch(URL_BASE_DATOS);
+        const respuesta = await fetch(URL_BASE_DATOS + "?nocache=" + new Date().getTime());
         const todosDatos = await respuesta.json();
 
         const resultado = todosDatos.filter(registro => {
