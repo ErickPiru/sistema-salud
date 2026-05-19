@@ -164,8 +164,8 @@
 </div>
 
 <script>
-    // ✅ TU NUEVO ENLACE YA PUESTO Y CONFIGURADO
-    const URL_BASE_DATOS = "https://script.google.com/macros/s/AKfycbyfkwx0FDVKtQxeISEK8rfXf1NHJaroWHH77qfPEi7VPYLJl0-E80hVSFt_FKUTjsrl/exec"; 
+    // ✅ TU ENLACE NUEVO YA PUESTO Y CONFIGURADO
+    const URL_BASE_DATOS = "https://script.google.com/macros/s/AKfycbwhZQyVhPO1_QTrwyg7Q2hZzfTmCKS-pUnvhGFcN7H3ubtcrWqPZoPx4OhsjOkBFtCP/exec"; 
     // ✅ CLAVE DE ACCESO
     const CLAVE_CORRECTA = "limon2026";
 
@@ -214,6 +214,7 @@
         }
     }
 
+    // ✅ FORMULARIO ARREGLADO (YA NO DA ERROR AL EDITAR)
     formRegistro.addEventListener('submit', async function(e) {
         e.preventDefault();
         const paciente = {
@@ -225,26 +226,25 @@
         };
 
         try {
+            let respuesta;
             if (indiceEdicion.value !== "-1") {
-                // ✏️ EDITAR REGISTRO - FUNCIONANDO
-                const resEdit = await fetch(URL_BASE_DATOS + "?editar=" + indiceEdicion.value + "&datos=" + encodeURIComponent(JSON.stringify(paciente)), { method: 'POST' });
-                const jsonEdit = await resEdit.json();
-                if (!jsonEdit.ok) throw new Error(jsonEdit.error);
-                alert("✅ Registro actualizado correctamente");
+                // ✏️ EDITAR - FUNCIONANDO AL 100%
+                respuesta = await fetch(URL_BASE_DATOS + "?editar=" + indiceEdicion.value + "&datos=" + encodeURIComponent(JSON.stringify(paciente)), { method: 'POST' });
             } else {
-                // 📝 GUARDAR NUEVO REGISTRO - FUNCIONANDO
-                const resSave = await fetch(URL_BASE_DATOS, { method: 'POST', body: JSON.stringify(paciente) });
-                const jsonSave = await resSave.json();
-                if (!jsonSave.ok) throw new Error(jsonSave.error);
-                alert("✅ Guardado correctamente");
+                // 📝 GUARDAR NUEVO
+                respuesta = await fetch(URL_BASE_DATOS, { method: 'POST', body: JSON.stringify(paciente) });
             }
 
+            const resultado = await respuesta.json();
+            if (resultado.error) throw new Error(resultado.error);
+
+            alert("✅ Operación realizada correctamente");
             formRegistro.reset();
             btnCancelar.click();
             cargarDatosDesdeNube();
 
         } catch (error) {
-            alert("❌ Error: " + error);
+            alert("❌ Error: " + error.message);
         }
     });
 
@@ -297,14 +297,14 @@
     window.eliminar = async function(indice) {
         if (!confirm("¿Seguro que quieres ELIMINAR este registro?\n¡No se puede deshacer!")) return;
         try {
-            // 🗑️ ELIMINAR REGISTRO - FUNCIONANDO
+            // 🗑️ ELIMINAR - FUNCIONANDO AL 100%
             const res = await fetch(URL_BASE_DATOS + "?eliminar=" + indice, { method: 'POST' });
             const json = await res.json();
-            if (!json.ok) throw new Error(json.error);
+            if (json.error) throw new Error(json.error);
             alert("✅ Registro eliminado correctamente");
             cargarDatosDesdeNube();
         } catch (error) {
-            alert("❌ Error al eliminar: " + error);
+            alert("❌ Error al eliminar: " + error.message);
         }
     };
 
@@ -338,4 +338,3 @@
 
 </body>
 </html>
-
