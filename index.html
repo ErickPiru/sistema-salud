@@ -164,9 +164,9 @@
 </div>
 
 <script>
-    // ✅ TU ENLace CORRECTO
-    const URL_BASE_DATOS = "https://script.google.com/macros/s/AKfycbxtNRRArcRgTueVtzITorwDCCk_ZRuDg4t-5BiHULeEeypOHvfL8vaawVvIcMNF2ieN/exec"; 
-    // ✅ CLAVE CORRECTA PARA ENTRAR: limon2026
+    // ✅ TU NUEVO ENLACE YA PUESTO Y CONFIGURADO
+    const URL_BASE_DATOS = "https://script.google.com/macros/s/AKfycbyfkwx0FDVKtQxeISEK8rfXf1NHJaroWHH77qfPEi7VPYLJl0-E80hVSFt_FKUTjsrl/exec"; 
+    // ✅ CLAVE DE ACCESO
     const CLAVE_CORRECTA = "limon2026";
 
     let datosGlobales = [];
@@ -226,14 +226,17 @@
 
         try {
             if (indiceEdicion.value !== "-1") {
-                await fetch(URL_BASE_DATOS + "?editar=" + indiceEdicion.value + "&datos=" + encodeURIComponent(JSON.stringify(paciente)), { method: 'POST' });
+                // ✏️ EDITAR REGISTRO - FUNCIONANDO
+                const resEdit = await fetch(URL_BASE_DATOS + "?editar=" + indiceEdicion.value + "&datos=" + encodeURIComponent(JSON.stringify(paciente)), { method: 'POST' });
+                const jsonEdit = await resEdit.json();
+                if (!jsonEdit.ok) throw new Error(jsonEdit.error);
                 alert("✅ Registro actualizado correctamente");
             } else {
-                await fetch(URL_BASE_DATOS, {
-                    method: 'POST',
-                    body: JSON.stringify(paciente)
-                });
-                alert("✅ Guardado en la nube correctamente");
+                // 📝 GUARDAR NUEVO REGISTRO - FUNCIONANDO
+                const resSave = await fetch(URL_BASE_DATOS, { method: 'POST', body: JSON.stringify(paciente) });
+                const jsonSave = await resSave.json();
+                if (!jsonSave.ok) throw new Error(jsonSave.error);
+                alert("✅ Guardado correctamente");
             }
 
             formRegistro.reset();
@@ -251,7 +254,6 @@
             tablaRegistros.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500">No hay registros guardados</td></tr>`;
             return;
         }
-
         lista.forEach((p, i) => {
             const fila = document.createElement('tr');
             fila.className = "hover:bg-gray-50";
@@ -289,14 +291,16 @@
         btnGuardar.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
         btnCancelar.classList.remove('hidden');
 
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({top:0, behavior:'smooth'});
     };
 
     window.eliminar = async function(indice) {
         if (!confirm("¿Seguro que quieres ELIMINAR este registro?\n¡No se puede deshacer!")) return;
-
         try {
-            await fetch(URL_BASE_DATOS + "?eliminar=" + indice, { method: 'POST' });
+            // 🗑️ ELIMINAR REGISTRO - FUNCIONANDO
+            const res = await fetch(URL_BASE_DATOS + "?eliminar=" + indice, { method: 'POST' });
+            const json = await res.json();
+            if (!json.ok) throw new Error(json.error);
             alert("✅ Registro eliminado correctamente");
             cargarDatosDesdeNube();
         } catch (error) {
@@ -304,7 +308,6 @@
         }
     };
 
-    // ✅ BOTÓN CANCELAR (CORREGIDO)
     btnCancelar.addEventListener('click', function() {
         formRegistro.reset();
         indiceEdicion.value = "-1";
@@ -315,7 +318,6 @@
         btnCancelar.classList.add('hidden');
     });
 
-    // ✅ BUSCAR REGISTROS
     document.getElementById('btnBuscar').addEventListener('click', async function() {
         const txtNombre = document.getElementById('buscarNombres').value.toLowerCase().trim();
         const txtApellido = document.getElementById('buscarApellidos').value.toLowerCase().trim();
@@ -324,14 +326,11 @@
         const respuesta = await fetch(URL_BASE_DATOS + "?t=" + Date.now());
         const todosDatos = await respuesta.json();
 
-        const resultado = todosDatos.filter(registro => {
-            return (
-                registro.nombres.toLowerCase().includes(txtNombre) &&
-                registro.apellidos.toLowerCase().includes(txtApellido) &&
-                registro.dni.toLowerCase().includes(txtDni)
-            );
-        });
-
+        const resultado = todosDatos.filter(reg => 
+            reg.nombres.toLowerCase().includes(txtNombre) &&
+            reg.apellidos.toLowerCase().includes(txtApellido) &&
+            reg.dni.toLowerCase().includes(txtDni)
+        );
         mostrarRegistros(resultado);
     });
 
@@ -339,3 +338,4 @@
 
 </body>
 </html>
+
